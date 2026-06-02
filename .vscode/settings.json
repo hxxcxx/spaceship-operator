@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "*.cpp": "cpp",
+        "*.h": "cpp"
+    },
+
+    // CMake Tools 配置
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.generator": "Visual Studio 17 2022",
+    "cmake.configureSettings": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+    },
+
+    // C/C++ IntelliSense 配置
+    "C_Cpp.default.compilerPath": "cl.exe",
+    "C_Cpp.errorSquiggles": "enabled"
+}

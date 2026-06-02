@@ -4,7 +4,6 @@ out/
 
 # IDE
 .vs/
-.vscode/
 *.user
 *.suo
 *.sln

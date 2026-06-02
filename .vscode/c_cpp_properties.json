@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "compilerPath": "C:/APP/VS/2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "windows-msvc-x64",
+            "compilerArgs": ["/permissive-", "/Zc:__cplusplus"]
+        }
+    ],
+    "version": 4
+}
