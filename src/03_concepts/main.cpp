@@ -5,6 +5,9 @@
 #include <type_traits>
 #include <iterator>
 #include <memory>
+#include <ranges>
+#include <array>
+#include <list>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -35,6 +38,21 @@ int compare_cross(const T& a, const U& b) {
     if (a < b) return -1;
     if (a > b) return 1;
     return 0;
+}
+
+// ranges 概念: range, forward_range, random_access_range, sized_range 等
+template<std::ranges::range R>
+void print_range_concept_info(const R&) {
+    using T = std::ranges::range_value_t<R>;
+
+    // 编译期布尔值：检查更细粒度的 range 概念
+    std::cout << "    forward_range: " << std::ranges::forward_range<R> << "\n";
+    std::cout << "    bidirectional_range: " << std::ranges::bidirectional_range<R> << "\n";
+    std::cout << "    random_access_range: " << std::ranges::random_access_range<R> << "\n";
+    std::cout << "    contiguous_range: " << std::ranges::contiguous_range<R> << "\n";
+    std::cout << "    sized_range: " << std::ranges::sized_range<R> << "\n";
+    std::cout << "    common_range: " << std::ranges::common_range<R> << "\n";
+    std::cout << "    view: " << std::ranges::view<R> << "\n";
 }
 
 // --- 3.2 自定义概念 (Custom Concepts) ---
@@ -173,6 +191,18 @@ int main() {
     std::cout << "  compare_cross(3.0, 2) = " << compare_cross(3.0, 2) << "\n";
     // int 和 string 不满足 totally_ordered_with，编译错误:
     // compare_cross(1, std::string("hello"));
+    std::cout << "\n";
+
+    // ranges 概念检查
+    std::cout << "  [vector<int> range properties]\n";
+    print_range_concept_info(std::vector<int>{});
+    std::cout << "  [list<int> range properties]\n";
+    print_range_concept_info(std::list<int>{});
+    std::cout << "  [string range properties]\n";
+    print_range_concept_info(std::string{});
+    auto view = std::vector<int>{1,2,3} | std::views::take(2);
+    std::cout << "  [take_view range properties]\n";
+    print_range_concept_info(view);
     std::cout << "\n";
 
     // 3.2 自定义概念
