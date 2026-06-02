@@ -81,6 +81,20 @@ void print_range_concept_info(const R&) {
     std::cout << std::format("    view: {}\n", std::ranges::view<R>);
 }
 
+// sized_range 约束: O(1) 时间获取元素数量
+// 不是所有 range 都有 size()，如 filter_view 就不满足 sized_range
+template<std::ranges::sized_range R>
+std::size_t fast_size(const R& r) {
+    return std::ranges::size(r);  // 保证 O(1)
+}
+
+// 通用 range 版本: 可能需要 O(n) 遍历
+template<std::ranges::range R>
+    requires (!std::ranges::sized_range<R>)
+std::size_t slow_count(const R& r) {
+    return static_cast<std::size_t>(std::ranges::distance(r));
+}
+
 // --- 3.2 自定义概念 (Custom Concepts) ---
 
 // 简单约束：要求有 size() 方法
@@ -301,6 +315,19 @@ int main() {
     auto view = std::vector<int>{1,2,3} | std::views::take(2);
     std::cout << "  [take_view range properties]\n";
     print_range_concept_info(view);
+
+    // sized_range 约束示例
+    std::vector<int> sv{1, 2, 3, 4, 5};
+    auto take_v = sv | std::views::take(3);
+    auto fv = sv | std::views::filter([](int x) { return x > 2; });
+    std::cout << std::format("  fast_size(vector): {}\n", fast_size(sv));
+    std::cout << std::format("  fast_size(take_view): {}\n", fast_size(take_v));
+    // fast_size(fv)  // 编译错误: filter_view 不满足 sized_range
+    bool vec_sized = std::ranges::sized_range<decltype(sv)>;
+    bool take_sized = std::ranges::sized_range<decltype(take_v)>;
+    bool filt_sized = std::ranges::sized_range<decltype(fv)>;
+    std::cout << std::format("  sized: vector={}, take={}, filter={}\n",
+        vec_sized, take_sized, filt_sized);
     std::cout << "\n";
 
     // 3.2 自定义概念
