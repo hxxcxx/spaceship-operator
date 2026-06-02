@@ -8,6 +8,7 @@
 #include <ranges>
 #include <array>
 #include <list>
+#include <set>
 #include <format>
 #ifdef _WIN32
 #include <windows.h>
@@ -104,11 +105,36 @@ concept SupportsSort = requires(Coll c) {
     c.sort();
 };
 
-// 通用 add: 只对支持 push_back 的容器生效
+// 禁止窄化转换的概念
+// std::convertible_to 允许窄化 (如 long long -> int)，
+// ConvertsWithoutNarrowing 通过数组初始化检查来禁止窄化
+template<typename From, typename To>
+concept ConvertsWithoutNarrowing =
+    std::convertible_to<From, To> && requires(From&& x) {
+        { std::type_identity_t<To[]>{std::forward<From>(x)} }
+        -> std::same_as<To[1]>;
+};
+
+// 通用 add(单值): 自动选择 push_back 或 insert，并禁止窄化
 template<typename Coll, typename T>
-    requires SupportsPushBack<Coll, T>
+    requires ConvertsWithoutNarrowing<T, typename Coll::value_type>
 void add(Coll& coll, const T& val) {
-    coll.push_back(val);
+    if constexpr (SupportsPushBack<Coll, typename Coll::value_type>) {
+        coll.push_back(val);
+    } else {
+        coll.insert(val);
+    }
+}
+
+// 通用 add(范围): 插入整个范围，并禁止窄化
+template<typename Coll, std::ranges::input_range R>
+    requires ConvertsWithoutNarrowing<std::ranges::range_value_t<R>, typename Coll::value_type>
+void add(Coll& coll, const R& range) {
+    if constexpr (SupportsPushBack<Coll, typename Coll::value_type>) {
+        coll.insert(coll.end(), std::ranges::begin(range), std::ranges::end(range));
+    } else {
+        coll.insert(std::ranges::begin(range), std::ranges::end(range));
+    }
 }
 
 // 通用 add_front: 只对支持 push_front 的容器生效
@@ -293,23 +319,36 @@ int main() {
     std::cout << std::format("  list SupportsSort: {}\n", SupportsSort<std::list<int>>);
     std::cout << std::format("  vector SupportsSort: {}\n", SupportsSort<std::vector<int>>);
 
-    std::vector<int> vec;
-    add(vec, 10);
-    add(vec, 20);
-    add(vec, 30);
-    std::cout << "  add(vector, 10/20/30): ";
-    for (auto& e : vec) std::cout << e << " ";
+    // ConvertsWithoutNarrowing + add() 完整示例
+    std::vector<int> iVec;
+    add(iVec, 42);          // OK: push_back
+    std::set<int> iSet;
+    add(iSet, 42);           // OK: insert
+    short s = 42;
+    add(iVec, s);            // OK: short -> int 不窄化
+    // add(iVec, 7.7);       // 编译错误: double -> int 窄化
+    // long long ll = 42; add(iVec, ll);  // 编译错误: long long -> int 窄化
+
+    std::vector<double> dVec;
+    add(dVec, 0.7);          // OK: double
+    add(dVec, 0.7f);         // OK: float -> double 不窄化
+    // add(dVec, 7);         // 编译错误: int -> double 窄化
+
+    // 范围插入
+    add(iVec, iSet);         // OK: set<int> -> vector<int>
+    int vals[] = {0, 8, 18};
+    add(iVec, vals);         // OK: int[] -> vector<int>
+    // add(dVec, vals);      // 编译错误: int[] -> vector<double> 窄化
+
+    std::cout << "  iVec after all add(): ";
+    for (auto& e : iVec) std::cout << e << " ";
     std::cout << "\n";
 
     std::list<int> lst;
-    add(lst, 100);
-    add_front(lst, 0);
-    std::cout << "  list after add(100) + add_front(0): ";
-    for (auto& e : lst) std::cout << e << " ";
-    std::cout << "\n";
-
-    sort_if_can(lst);
-    std::cout << "  list after sort_if_can(): ";
+    add(lst, 100);           // OK: push_back
+    add_front(lst, 0);       // OK: push_front
+    sort_if_can(lst);        // OK: list 有 .sort()
+    std::cout << "  list after add/add_front/sort: ";
     for (auto& e : lst) std::cout << e << " ";
     std::cout << "\n\n";
 
