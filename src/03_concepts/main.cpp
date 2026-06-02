@@ -40,6 +40,32 @@ int compare_cross(const T& a, const U& b) {
     return 0;
 }
 
+// convertible_to: 检查 From 是否能隐式转换到 To
+// 注意: convertible_to<int, double> 为 true，但 convertible_to<double, int> 也为 true (窄化转换在隐式中允许)
+// same_as 更严格: 要求完全相同的类型
+
+// 示例: 通用 to_string，要求 T 能转换为 string
+template<typename T>
+    requires std::convertible_to<T, std::string>
+std::string as_string(const T& val) {
+    return std::string(val);
+}
+
+// 示例: 通用数值函数，要求能转换为 double
+template<typename T>
+    requires std::convertible_to<T, double>
+double to_double(const T& val) {
+    return static_cast<double>(val);
+}
+
+// 对比 same_as vs convertible_to vs common_reference_with
+template<typename T, typename U>
+void print_convertibility() {
+    std::cout << "    convertible_to: " << std::convertible_to<T, U> << "\n";
+    std::cout << "    same_as: " << std::same_as<T, U> << "\n";
+    std::cout << "    common_reference_with: " << std::common_reference_with<T, U> << "\n";
+}
+
 // ranges 概念: range, forward_range, random_access_range, sized_range 等
 template<std::ranges::range R>
 void print_range_concept_info(const R&) {
@@ -62,6 +88,43 @@ template<typename T>
 concept HasSize = requires(T t) {
     { t.size() } -> std::convertible_to<std::size_t>;
 };
+
+// 检测成员函数是否存在: push_back, push_front, insert, find, sort 等
+template<typename Coll, typename T>
+concept SupportsPushBack = requires(Coll c, T v) {
+    c.push_back(v);
+};
+
+template<typename Coll, typename T>
+concept SupportsPushFront = requires(Coll c, T v) {
+    c.push_front(v);
+};
+
+template<typename Coll>
+concept SupportsSort = requires(Coll c) {
+    c.sort();
+};
+
+// 通用 add: 只对支持 push_back 的容器生效
+template<typename Coll, typename T>
+    requires SupportsPushBack<Coll, T>
+void add(Coll& coll, const T& val) {
+    coll.push_back(val);
+}
+
+// 通用 add_front: 只对支持 push_front 的容器生效
+template<typename Coll, typename T>
+    requires SupportsPushFront<Coll, T>
+void add_front(Coll& coll, const T& val) {
+    coll.push_front(val);
+}
+
+// 通用 sort_if_can: 只对支持自身 sort() 的容器生效
+template<typename Coll>
+    requires SupportsSort<Coll>
+void sort_if_can(Coll& coll) {
+    coll.sort();
+}
 
 // 复合约束：要求是容器（有 begin/end/size）
 template<typename T>
@@ -193,6 +256,20 @@ int main() {
     // compare_cross(1, std::string("hello"));
     std::cout << "\n";
 
+    // convertible_to 示例
+    std::cout << "  as_string(\"hello\") = " << as_string("hello") << "\n";
+    std::cout << "  as_string(std::string(\"world\")) = " << as_string(std::string("world")) << "\n";
+    std::cout << "  to_double(42) = " << to_double(42) << "\n";
+    std::cout << "  to_double(3.14f) = " << to_double(3.14f) << "\n";
+    // as_string(42);  // 编译错误: int 不可转换为 string
+
+    // same_as vs convertible_to vs common_reference_with
+    std::cout << "  [int vs double]:\n";    print_convertibility<int, double>();
+    std::cout << "  [int vs int]:\n";       print_convertibility<int, int>();
+    std::cout << "  [int vs string]:\n";    print_convertibility<int, std::string>();
+    std::cout << "  [const char* vs string]:\n"; print_convertibility<const char*, std::string>();
+    std::cout << "\n";
+
     // ranges 概念检查
     std::cout << "  [vector<int> range properties]\n";
     print_range_concept_info(std::vector<int>{});
@@ -215,6 +292,34 @@ int main() {
     std::cout << "  vector Container: " << Container<std::vector<int>> << "\n";
     std::cout << "  vector NumericContainer: " << NumericContainer<std::vector<int>> << "\n";
     std::cout << "  vector<double> NumericContainer: " << NumericContainer<std::vector<double>> << "\n";
+
+    // SupportsPushBack / SupportsPushFront / SupportsSort
+    std::cout << "  vector SupportsPushBack<int>: " << SupportsPushBack<std::vector<int>, int> << "\n";
+    std::cout << "  list SupportsPushFront<int>: " << SupportsPushFront<std::list<int>, int> << "\n";
+    std::cout << "  vector SupportsPushFront<int>: " << SupportsPushFront<std::vector<int>, int> << "\n";
+    std::cout << "  list SupportsSort: " << SupportsSort<std::list<int>> << "\n";
+    std::cout << "  vector SupportsSort: " << SupportsSort<std::vector<int>> << "\n";
+
+    std::vector<int> vec;
+    add(vec, 10);
+    add(vec, 20);
+    add(vec, 30);
+    std::cout << "  add(vector, 10/20/30): ";
+    for (auto& e : vec) std::cout << e << " ";
+    std::cout << "\n";
+
+    std::list<int> lst;
+    add(lst, 100);       // list 也支持 push_back
+    add_front(lst, 0);   // list 支持 push_front
+    std::cout << "  list after add(100) + add_front(0): ";
+    for (auto& e : lst) std::cout << e << " ";
+    std::cout << "\n";
+
+    sort_if_can(lst);     // list 有自己的 sort()
+    std::cout << "  list after sort_if_can(): ";
+    for (auto& e : lst) std::cout << e << " ";
+    std::cout << "\n";
+    // sort_if_can(vec);  // 编译错误: vector 没有 .sort() 成员函数
     std::cout << "\n";
 
     // 3.3 requires 四种形式
