@@ -10,6 +10,7 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
+            "console": "integratedTerminal",
             "preLaunchTask": "CMake: Build Debug"
         }
     ]

@@ -3,6 +3,9 @@
 #include <vector>
 #include <concepts>
 #include <type_traits>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 // ============================================================
 // 第2章：函数参数占位符类型 (Placeholder Types)
@@ -89,6 +92,9 @@ void describe(std::floating_point auto val) {
 // ============================================================
 
 int main() {
+#ifdef _WIN32
+    SetConsoleOutputCP(65001);
+#endif
     std::cout << "=== 第2章：函数参数占位符类型 ===\n\n";
 
     // 2.1 auto 作为函数参数

@@ -4,6 +4,9 @@
 #include <cmath>
 #include <set>
 #include <algorithm>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 // ============================================================
 // 第1章：C++20 比较与运算符 (Spaceship Operator <=>)
@@ -92,6 +95,9 @@ void demo_set() {
 // ============================================================
 
 int main() {
+#ifdef _WIN32
+    SetConsoleOutputCP(65001);
+#endif
     std::cout << "=== 第1章：C++20 比较与运算符 ===\n\n";
 
     // 1.1 默认三路比较
