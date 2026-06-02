@@ -8,6 +8,7 @@
 #include <ranges>
 #include <array>
 #include <list>
+#include <format>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -61,24 +62,22 @@ double to_double(const T& val) {
 // 对比 same_as vs convertible_to vs common_reference_with
 template<typename T, typename U>
 void print_convertibility() {
-    std::cout << "    convertible_to: " << std::convertible_to<T, U> << "\n";
-    std::cout << "    same_as: " << std::same_as<T, U> << "\n";
-    std::cout << "    common_reference_with: " << std::common_reference_with<T, U> << "\n";
+    std::cout << std::format("    convertible_to: {}\n", std::convertible_to<T, U>);
+    std::cout << std::format("    same_as: {}\n", std::same_as<T, U>);
+    std::cout << std::format("    common_reference_with: {}\n", std::common_reference_with<T, U>);
 }
 
 // ranges 概念: range, forward_range, random_access_range, sized_range 等
 template<std::ranges::range R>
 void print_range_concept_info(const R&) {
     using T = std::ranges::range_value_t<R>;
-
-    // 编译期布尔值：检查更细粒度的 range 概念
-    std::cout << "    forward_range: " << std::ranges::forward_range<R> << "\n";
-    std::cout << "    bidirectional_range: " << std::ranges::bidirectional_range<R> << "\n";
-    std::cout << "    random_access_range: " << std::ranges::random_access_range<R> << "\n";
-    std::cout << "    contiguous_range: " << std::ranges::contiguous_range<R> << "\n";
-    std::cout << "    sized_range: " << std::ranges::sized_range<R> << "\n";
-    std::cout << "    common_range: " << std::ranges::common_range<R> << "\n";
-    std::cout << "    view: " << std::ranges::view<R> << "\n";
+    std::cout << std::format("    forward_range: {}\n", std::ranges::forward_range<R>);
+    std::cout << std::format("    bidirectional_range: {}\n", std::ranges::bidirectional_range<R>);
+    std::cout << std::format("    random_access_range: {}\n", std::ranges::random_access_range<R>);
+    std::cout << std::format("    contiguous_range: {}\n", std::ranges::contiguous_range<R>);
+    std::cout << std::format("    sized_range: {}\n", std::ranges::sized_range<R>);
+    std::cout << std::format("    common_range: {}\n", std::ranges::common_range<R>);
+    std::cout << std::format("    view: {}\n", std::ranges::view<R>);
 }
 
 // --- 3.2 自定义概念 (Custom Concepts) ---
@@ -174,7 +173,7 @@ concept NumericContainer = Container<T> && requires {
 template<typename T>
     requires std::is_pointer_v<T>
 void print_pointer_info(T ptr) {
-    std::cout << "  pointer to: " << typeid(*ptr).name() << "\n";
+    std::cout << std::format("  pointer to: {}\n", typeid(*ptr).name());
 }
 
 // 方式2: requires 子句 + 表达式
@@ -216,7 +215,7 @@ class HashSet {
 public:
     void insert(const T& val) {
         std::size_t h = std::hash<T>{}(val);
-        std::cout << "  insert " << val << " (hash=" << h << ")\n";
+        std::cout << std::format("  insert {} (hash={})\n", val, h);
     }
 };
 
@@ -243,25 +242,21 @@ int main() {
 
     // 3.1 标准库概念
     std::cout << "--- 3.1 标准库概念 ---\n";
-    std::cout << "  gcd(12, 8) = " << gcd(12, 8) << "\n";
-    std::cout << "  gcd(100, 75) = " << gcd(100, 75) << "\n";
-    std::cout << "  normalize(-3.14) = " << normalize(-3.14) << "\n";
-    // gcd(3.14, 2.0);  // 编译错误: 不满足 std::integral
+    std::cout << std::format("  gcd(12, 8) = {}\n", gcd(12, 8));
+    std::cout << std::format("  gcd(100, 75) = {}\n", gcd(100, 75));
+    std::cout << std::format("  normalize(-3.14) = {}\n", normalize(-3.14));
 
     // totally_ordered_with: 跨类型比较
-    std::cout << "  compare_cross(42, 42.0) = " << compare_cross(42, 42.0) << "\n";
-    std::cout << "  compare_cross(1, 2.0) = " << compare_cross(1, 2.0) << "\n";
-    std::cout << "  compare_cross(3.0, 2) = " << compare_cross(3.0, 2) << "\n";
-    // int 和 string 不满足 totally_ordered_with，编译错误:
-    // compare_cross(1, std::string("hello"));
+    std::cout << std::format("  compare_cross(42, 42.0) = {}\n", compare_cross(42, 42.0));
+    std::cout << std::format("  compare_cross(1, 2.0) = {}\n", compare_cross(1, 2.0));
+    std::cout << std::format("  compare_cross(3.0, 2) = {}\n", compare_cross(3.0, 2));
     std::cout << "\n";
 
     // convertible_to 示例
-    std::cout << "  as_string(\"hello\") = " << as_string("hello") << "\n";
-    std::cout << "  as_string(std::string(\"world\")) = " << as_string(std::string("world")) << "\n";
-    std::cout << "  to_double(42) = " << to_double(42) << "\n";
-    std::cout << "  to_double(3.14f) = " << to_double(3.14f) << "\n";
-    // as_string(42);  // 编译错误: int 不可转换为 string
+    std::cout << std::format("  as_string(\"hello\") = {}\n", as_string("hello"));
+    std::cout << std::format("  as_string(std::string(\"world\")) = {}\n", as_string(std::string("world")));
+    std::cout << std::format("  to_double(42) = {}\n", to_double(42));
+    std::cout << std::format("  to_double(3.14f) = {}\n", to_double(3.14f));
 
     // same_as vs convertible_to vs common_reference_with
     std::cout << "  [int vs double]:\n";    print_convertibility<int, double>();
@@ -284,21 +279,19 @@ int main() {
 
     // 3.2 自定义概念
     std::cout << "--- 3.2 自定义概念 ---\n";
-    std::vector<int> v{1, 2, 3, 4, 5};
-    std::string s = "hello";
-    std::cout << "  vector HasSize: " << HasSize<std::vector<int>> << "\n";
-    std::cout << "  string HasSize: " << HasSize<std::string> << "\n";
-    std::cout << "  int HasSize: " << HasSize<int> << "\n";
-    std::cout << "  vector Container: " << Container<std::vector<int>> << "\n";
-    std::cout << "  vector NumericContainer: " << NumericContainer<std::vector<int>> << "\n";
-    std::cout << "  vector<double> NumericContainer: " << NumericContainer<std::vector<double>> << "\n";
+    std::cout << std::format("  vector HasSize: {}\n", HasSize<std::vector<int>>);
+    std::cout << std::format("  string HasSize: {}\n", HasSize<std::string>);
+    std::cout << std::format("  int HasSize: {}\n", HasSize<int>);
+    std::cout << std::format("  vector Container: {}\n", Container<std::vector<int>>);
+    std::cout << std::format("  vector NumericContainer: {}\n", NumericContainer<std::vector<int>>);
+    std::cout << std::format("  vector<double> NumericContainer: {}\n", NumericContainer<std::vector<double>>);
 
     // SupportsPushBack / SupportsPushFront / SupportsSort
-    std::cout << "  vector SupportsPushBack<int>: " << SupportsPushBack<std::vector<int>, int> << "\n";
-    std::cout << "  list SupportsPushFront<int>: " << SupportsPushFront<std::list<int>, int> << "\n";
-    std::cout << "  vector SupportsPushFront<int>: " << SupportsPushFront<std::vector<int>, int> << "\n";
-    std::cout << "  list SupportsSort: " << SupportsSort<std::list<int>> << "\n";
-    std::cout << "  vector SupportsSort: " << SupportsSort<std::vector<int>> << "\n";
+    std::cout << std::format("  vector SupportsPushBack<int>: {}\n", SupportsPushBack<std::vector<int>, int>);
+    std::cout << std::format("  list SupportsPushFront<int>: {}\n", SupportsPushFront<std::list<int>, int>);
+    std::cout << std::format("  vector SupportsPushFront<int>: {}\n", SupportsPushFront<std::vector<int>, int>);
+    std::cout << std::format("  list SupportsSort: {}\n", SupportsSort<std::list<int>>);
+    std::cout << std::format("  vector SupportsSort: {}\n", SupportsSort<std::vector<int>>);
 
     std::vector<int> vec;
     add(vec, 10);
@@ -309,44 +302,39 @@ int main() {
     std::cout << "\n";
 
     std::list<int> lst;
-    add(lst, 100);       // list 也支持 push_back
-    add_front(lst, 0);   // list 支持 push_front
+    add(lst, 100);
+    add_front(lst, 0);
     std::cout << "  list after add(100) + add_front(0): ";
     for (auto& e : lst) std::cout << e << " ";
     std::cout << "\n";
 
-    sort_if_can(lst);     // list 有自己的 sort()
+    sort_if_can(lst);
     std::cout << "  list after sort_if_can(): ";
     for (auto& e : lst) std::cout << e << " ";
-    std::cout << "\n";
-    // sort_if_can(vec);  // 编译错误: vector 没有 .sort() 成员函数
-    std::cout << "\n";
+    std::cout << "\n\n";
 
     // 3.3 requires 四种形式
     std::cout << "--- 3.3 requires 四种形式 ---\n";
-    std::cout << "  vector HasValueType: " << HasValueType<std::vector<int>> << "\n";
-    std::cout << "  int Hashable: " << Hashable<int> << "\n";
-    std::cout << "  string Hashable: " << Hashable<std::string> << "\n";
-    std::cout << "  double Hashable: " << Hashable<double> << "\n";
-    std::cout << "\n";
+    std::cout << std::format("  vector HasValueType: {}\n", HasValueType<std::vector<int>>);
+    std::cout << std::format("  int Hashable: {}\n", Hashable<int>);
+    std::cout << std::format("  string Hashable: {}\n", Hashable<std::string>);
+    std::cout << std::format("  double Hashable: {}\n\n", Hashable<double>);
 
     // 3.4 requires 子句
     std::cout << "--- 3.4 requires 子句 ---\n";
     int x = 42;
     print_pointer_info(&x);
-    std::cout << "  doubler(21) = " << doubler(21) << "\n";
-    std::cout << "  doubler(3.14) = " << doubler(3.14) << "\n";
-    std::cout << "  square(5) = " << square(5) << "\n";
-    std::cout << "  square(2.5) = " << square(2.5) << "\n";
-    std::cout << "\n";
+    std::cout << std::format("  doubler(21) = {}\n", doubler(21));
+    std::cout << std::format("  doubler(3.14) = {}\n", doubler(3.14));
+    std::cout << std::format("  square(5) = {}\n", square(5));
+    std::cout << std::format("  square(2.5) = {}\n\n", square(2.5));
 
     // 3.5 约束与重载
     std::cout << "--- 3.5 约束与重载 ---\n";
-    std::cout << "  describe_type(42) = " << describe_type(42) << "\n";
-    std::cout << "  describe_type(3.14) = " << describe_type(3.14) << "\n";
-    std::cout << "  describe_type_detail(42) = " << describe_type_detail(42) << "\n";
-    std::cout << "  describe_type_detail(42LL) = " << describe_type_detail(42LL) << "\n";
-    std::cout << "\n";
+    std::cout << std::format("  describe_type(42) = {}\n", describe_type(42));
+    std::cout << std::format("  describe_type(3.14) = {}\n", describe_type(3.14));
+    std::cout << std::format("  describe_type_detail(42) = {}\n", describe_type_detail(42));
+    std::cout << std::format("  describe_type_detail(42LL) = {}\n\n", describe_type_detail(42LL));
 
     // 3.6 约束与类模板
     std::cout << "--- 3.6 约束与类模板 ---\n";
@@ -355,7 +343,6 @@ int main() {
     str_set.insert("world");
     HashSet<int> int_set;
     int_set.insert(42);
-    // HashSet<struct Foo> 不满足 Hashable，编译错误
     std::cout << "\n";
 
     // 3.7 约束偏特化

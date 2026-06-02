@@ -3,10 +3,10 @@
 #include <vector>
 #include <concepts>
 #include <type_traits>
+#include <format>
 #ifdef _WIN32
 #include <windows.h>
 #endif
-#include <iomanip>
 
 // ============================================================
 // 第2章：函数参数占位符类型 (Placeholder Types)
@@ -26,19 +26,19 @@ auto add_auto(auto a, auto b) {
 
 // --- 2.2 混合 auto 和具体类型 ---
 void print_twice(const auto& value) {
-    std::cout << value << " " << value << "\n";
+    std::cout << std::format("{} {}\n", value, value);
 }
 
 // --- 2.3 auto 参数 + 约束 (concepts) ---
 // 只接受整数类型
 auto int_only(std::integral auto x) {
-    std::cout << "  int_only: " << x << " (integral)\n";
+    std::cout << std::format("  int_only: {} (integral)\n", x);
     return x * 2;
 }
 
 // 只接受浮点类型
 auto float_only(std::floating_point auto x) {
-    std::cout << "  float_only: " << x << " (floating point)\n";
+    std::cout << std::format("  float_only: {} (floating point)\n", x);
     return x * 2.0;
 }
 
@@ -49,7 +49,7 @@ concept HasSize = requires(T t) {
 };
 
 auto print_size(const HasSize auto& container) {
-    std::cout << "  size = " << container.size() << "\n";
+    std::cout << std::format("  size = {}\n", container.size());
     return container.size();
 }
 
@@ -71,7 +71,7 @@ auto multiply(auto a, auto b, auto c) {
 
 void demo_lambda_auto() {
     auto processor = [](auto first, auto second) {
-        std::cout << "  processing: " << first << " and " << second << "\n";
+        std::cout << std::format("  processing: {} and {}\n", first, second);
     };
 
     processor(1, 2);
@@ -83,11 +83,11 @@ void demo_lambda_auto() {
 // 可以基于约束进行重载 (不靠 auto 参数数量重载)
 
 void describe(std::integral auto val) {
-    std::cout << "  integer: " << val << "\n";
+    std::cout << std::format("  integer: {}\n", val);
 }
 
 void describe(std::floating_point auto val) {
-    std::cout << "  floating: " << val << "\n";
+    std::cout << std::format("  floating: {}\n", val);
 }
 
 // ============================================================
@@ -100,9 +100,9 @@ int main() {
 
     // 2.1 auto 作为函数参数
     std::cout << "--- 2.1 auto 函数参数 ---\n";
-    std::cout << "  add_auto(1, 2) = " << add_auto(1, 2) << "\n";
-    std::cout << "  add_auto(1.5, 2.5) = " << add_auto(1.5, 2.5) << "\n";
-    std::cout << "  add_auto(1, 2.5) = " << add_auto(1, 2.5) << " (int + double)\n\n";
+    std::cout << std::format("  add_auto(1, 2) = {}\n", add_auto(1, 2));
+    std::cout << std::format("  add_auto(1.5, 2.5) = {}\n", add_auto(1.5, 2.5));
+    std::cout << std::format("  add_auto(1, 2.5) = {} (int + double)\n\n", add_auto(1, 2.5));
 
     // 2.2 混合 auto 和具体类型
     std::cout << "--- 2.2 const auto& 参数 ---\n";
@@ -115,8 +115,6 @@ int main() {
     std::cout << "--- 2.3 auto + concepts 约束 ---\n";
     int_only(42);
     float_only(3.14);
-    // int_only(3.14);  // 编译错误: 不满足 std::integral
-    // float_only(42);  // 编译错误: 不满足 std::floating_point
 
     std::vector<int> v{1, 2, 3, 4, 5};
     std::string s = "hello";
@@ -130,16 +128,15 @@ int main() {
     std::cout << "--- 2.4 decltype(auto) ---\n";
     std::vector<std::string> names{"Alice", "Bob", "Charlie"};
     decltype(auto) elem = get_element(names, 1);
-    std::cout << "  element[1] = " << elem << "\n";
-    elem = "David"; // 修改原容器
-    std::cout << "  after modify: names[1] = " << names[1] << "\n\n";
+    std::cout << std::format("  element[1] = {}\n", elem);
+    elem = "David";
+    std::cout << std::format("  after modify: names[1] = {}\n\n", names[1]);
+
     // 2.5 多个 auto 参数
     std::cout << "--- 2.5 多个 auto 参数 ---\n";
-    std::cout << "  multiply(2, 3, 4) = " << multiply(2, 3, 4) << "\n";
-    std::cout << "  multiply(2, 3.0, 4) = " << multiply(2, 3.1, 4) << "\n\n";
-    // std::cout << std::fixed << std::setprecision(1) << multiply(2, 3.0, 4)<< "\n";;
-    // std::cout << std::fixed << std::setprecision(1) << multiply(2, 3, 4) << "\n\n";
-    
+    std::cout << std::format("  multiply(2, 3, 4) = {}\n", multiply(2, 3, 4));
+    std::cout << std::format("  multiply(2, 3.0, 4) = {}\n\n", multiply(2, 3.0, 4));
+
     // 2.6 lambda auto
     std::cout << "--- 2.6 lambda auto ---\n";
     demo_lambda_auto();
@@ -148,7 +145,7 @@ int main() {
     // 2.7 基于约束重载
     std::cout << "--- 2.7 基于约束重载 ---\n";
     describe(42);
-    describe(3.16);
+    describe(3.14);
     std::cout << "\n";
 
     return 0;

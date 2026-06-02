@@ -4,6 +4,7 @@
 #include <cmath>
 #include <set>
 #include <algorithm>
+#include <format>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -89,7 +90,7 @@ void demo_set() {
     points.insert({1, 2});
     points.insert({3, 4});
     points.insert({1, 2}); // 重复，不会插入
-    std::cout << "  set size: " << points.size() << " (expect 2)\n";
+    std::cout << std::format("  set size: {} (expect 2)\n", points.size());
 }
 
 // ============================================================
@@ -103,38 +104,38 @@ int main() {
     // 1.1 默认三路比较
     std::cout << "--- 1.1 默认三路比较 ---\n";
     Point p1{1, 2}, p2{3, 4}, p3{1, 2};
-    std::cout << "  p1 < p2: " << (p1 < p2) << "\n";
-    std::cout << "  p1 == p3: " << (p1 == p3) << "\n";
-    std::cout << "  p1 <=> p2 is less: " << ((p1 <=> p2) < 0) << "\n\n";
+    std::cout << std::format("  p1 < p2: {}\n", p1 < p2);
+    std::cout << std::format("  p1 == p3: {}\n", p1 == p3);
+    std::cout << std::format("  p1 <=> p2 is less: {}\n\n", (p1 <=> p2) < 0);
 
     // 1.2 弱排序
     std::cout << "--- 1.2 弱排序 (CaseInsensitive) ---\n";
     CaseInsensitiveString a("Hello"), b("hello"), c("World");
-    std::cout << "  \"Hello\" <=> \"hello\": "
-              << ((a <=> b) == std::weak_ordering::equivalent ? "equivalent" : "different") << "\n";
-    std::cout << "  \"Hello\" <=> \"World\": "
-              << ((a <=> c) == std::weak_ordering::less ? "less" : "not less") << "\n\n";
+    std::cout << std::format("  \"Hello\" <=> \"hello\": {}\n",
+        (a <=> b) == std::weak_ordering::equivalent ? "equivalent" : "different");
+    std::cout << std::format("  \"Hello\" <=> \"World\": {}\n\n",
+        (a <=> c) == std::weak_ordering::less ? "less" : "not less");
 
     // 1.3 偏排序
     std::cout << "--- 1.3 偏排序 (Float with NaN) ---\n";
     FloatWrap fw1{1.0}, fw2{2.0}, fw3{std::numeric_limits<double>::quiet_NaN()};
-    std::cout << "  1.0 <=> 2.0: "
-              << ((fw1 <=> fw2) == std::partial_ordering::less ? "less" : "not less") << "\n";
-    std::cout << "  NaN <=> 1.0: "
-              << ((fw3 <=> fw1) == std::partial_ordering::unordered ? "unordered" : "ordered") << "\n\n";
+    std::cout << std::format("  1.0 <=> 2.0: {}\n",
+        (fw1 <=> fw2) == std::partial_ordering::less ? "less" : "not less");
+    std::cout << std::format("  NaN <=> 1.0: {}\n\n",
+        (fw3 <=> fw1) == std::partial_ordering::unordered ? "unordered" : "ordered");
 
     // 1.4 自定义比较逻辑
     std::cout << "--- 1.4 自定义比较逻辑 (Person) ---\n";
     Person alice{"Alice", 30}, bob{"Bob", 25}, alice2{"Alice", 30};
-    std::cout << "  Alice(30) < Bob(25) [by age]: " << (alice < bob) << "\n";
-    std::cout << "  Alice(30) > Bob(25) [by age]: " << (alice > bob) << "\n";
-    std::cout << "  Alice == Alice2 [by name+age]: " << (alice == alice2) << "\n\n";
+    std::cout << std::format("  Alice(30) < Bob(25) [by age]: {}\n", alice < bob);
+    std::cout << std::format("  Alice(30) > Bob(25) [by age]: {}\n", alice > bob);
+    std::cout << std::format("  Alice == Alice2 [by name+age]: {}\n\n", alice == alice2);
 
     // 1.5 自动生成的运算符
     std::cout << "--- 1.5 自动生成的运算符 ---\n";
-    std::cout << "  p1 != p2: " << (p1 != p2) << "\n";
-    std::cout << "  p1 <= p3: " << (p1 <= p3) << "\n";
-    std::cout << "  p2 >= p1: " << (p2 >= p1) << "\n\n";
+    std::cout << std::format("  p1 != p2: {}\n", p1 != p2);
+    std::cout << std::format("  p1 <= p3: {}\n", p1 <= p3);
+    std::cout << std::format("  p2 >= p1: {}\n\n", p2 >= p1);
 
     // 1.6 容器中使用
     std::cout << "--- 1.6 容器中使用 ---\n";
