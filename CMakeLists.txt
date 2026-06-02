@@ -11,3 +11,4 @@ endif()
 
 add_subdirectory(src/01_comparison)
 add_subdirectory(src/02_placeholder_types)
+add_subdirectory(src/03_concepts)
