@@ -6,6 +6,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#include <iomanip>
 
 // ============================================================
 // 第2章：函数参数占位符类型 (Placeholder Types)
@@ -132,12 +133,13 @@ int main() {
     std::cout << "  element[1] = " << elem << "\n";
     elem = "David"; // 修改原容器
     std::cout << "  after modify: names[1] = " << names[1] << "\n\n";
-
     // 2.5 多个 auto 参数
     std::cout << "--- 2.5 多个 auto 参数 ---\n";
     std::cout << "  multiply(2, 3, 4) = " << multiply(2, 3, 4) << "\n";
-    std::cout << "  multiply(2, 3.0, 4) = " << multiply(2, 3.0, 4) << "\n\n";
-
+    std::cout << "  multiply(2, 3.0, 4) = " << multiply(2, 3.1, 4) << "\n\n";
+    // std::cout << std::fixed << std::setprecision(1) << multiply(2, 3.0, 4)<< "\n";;
+    // std::cout << std::fixed << std::setprecision(1) << multiply(2, 3, 4) << "\n\n";
+    
     // 2.6 lambda auto
     std::cout << "--- 2.6 lambda auto ---\n";
     demo_lambda_auto();
@@ -146,7 +148,7 @@ int main() {
     // 2.7 基于约束重载
     std::cout << "--- 2.7 基于约束重载 ---\n";
     describe(42);
-    describe(3.14);
+    describe(3.16);
     std::cout << "\n";
 
     return 0;
