@@ -10,6 +10,8 @@
 #include <list>
 #include <set>
 #include <format>
+#include <iterator>
+#include <sstream>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -272,6 +274,29 @@ std::size_t count_elements(T val) {
     return static_cast<std::size_t>(val);
 }
 
+// --- 3.8 迭代器概念与重载 ---
+// 迭代器层级: input < forward < bidirectional < random_access < contiguous
+// input_iterator: 单遍遍历（如 istream_iterator）
+// forward_iterator: 多遍遍历（如 list/vector 的迭代器）
+
+// 约束: 只接受输入迭代器（最弱的要求）
+template<std::input_iterator Iter>
+void algo_input(Iter, Iter) {
+    std::cout << "  algo_input: input_iterator 版本（单遍即可）\n";
+}
+
+// 约束: 要求前向迭代器（多遍）
+template<std::forward_iterator Iter>
+void algo_forward(Iter, Iter) {
+    std::cout << "  algo_forward: forward_iterator 版本（需要多遍）\n";
+}
+
+// 约束: 要求随机访问迭代器（支持 +n, -n, []）
+template<std::random_access_iterator Iter>
+void algo_random(Iter, Iter) {
+    std::cout << "  algo_random: random_access_iterator 版本（需要随机访问）\n";
+}
+
 // ============================================================
 
 int main() {
@@ -414,9 +439,29 @@ int main() {
     // 3.7 约束偏特化
     std::cout << "--- 3.7 约束偏特化 ---\n";
     std::vector<int> v2{1, 2, 3};
-    std::cout << "  count_elements(vector) = " << count_elements(v2) << "\n";
-    std::cout << "  count_elements(7) = " << count_elements(7) << "\n";
-    std::cout << "\n";
+    std::cout << std::format("  count_elements(vector) = {}\n", count_elements(v2));
+    std::cout << std::format("  count_elements(7) = {}\n\n", count_elements(7));
+
+    // 3.8 迭代器概念与约束
+    std::cout << "--- 3.8 迭代器概念与约束 ---\n";
+    {
+        std::list<int> a{1, 2, 3};
+        std::vector<int> b{4, 5, 6};
+
+        algo_input(a.begin(), a.end());
+        algo_forward(a.begin(), a.end());
+        // algo_random(a.begin(), a.end());  // 编译错误: list 不满足 random_access
+
+        algo_input(b.begin(), b.end());
+        algo_forward(b.begin(), b.end());
+        algo_random(b.begin(), b.end());
+
+        bool list_ra = std::random_access_iterator<std::list<int>::iterator>;
+        bool vec_ra = std::random_access_iterator<std::vector<int>::iterator>;
+        bool vec_cont = std::contiguous_iterator<std::vector<int>::iterator>;
+        std::cout << std::format("  list  -> random_access: {}, contiguous: {}\n", list_ra, false);
+        std::cout << std::format("  vector-> random_access: {}, contiguous: {}\n\n", vec_ra, vec_cont);
+    }
 
     return 0;
 }
