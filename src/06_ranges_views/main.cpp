@@ -464,6 +464,100 @@ void demo_views_const() {
     std::cout << "\n";
 }
 
+// 6.4 对被销毁或修改的范围使用视图
+void demo_dangling_views() {
+    std::cout << "--- 6.4 对被销毁或修改的范围使用视图 ---\n";
+
+    // 6.4.1 悬空视图: 容器销毁后使用视图（未定义行为，仅演示概念）
+    // 错误示例（注释掉，运行会崩溃）:
+    // std::ranges::take_view<std::ranges::ref_view<std::vector<int>>> v = []{
+    //     std::vector<int> coll{1, 2, 3, 4, 5};
+    //     return coll | std::views::take(3);  // coll 被销毁，v 悬空!
+    // }();
+    // print(v);  // UB: 访问已销毁的 vector
+
+    std::cout << "  [悬空视图示例]\n";
+    std::cout << "    错误: lambda返回ref_view -> 容器销毁 -> 悬空引用\n";
+
+    // 正确方式1: 返回容器（值拷贝），视图在容器上创建
+    auto getVec = []() -> std::vector<int> {
+        return {1, 2, 3, 4, 5};
+    };
+    // 方式1a: 先存储容器，再创建视图
+    auto vec = getVec();
+    auto safeView1 = vec | std::views::take(3);
+    std::cout << "    安全1(先存容器): "; 
+    print(safeView1);
+
+    // 方式1b: 使用 owning_view（转移所有权给视图）
+    auto safeView2 = getVec() | std::views::take(3);  // owning_view
+    std::cout << "    安全2(owning):   "; 
+    print(safeView2);
+
+    // 方式1c: 在 lambda 内部完成遍历
+    auto getAndPrint = []() {
+        std::vector<int> coll{1, 2, 3, 4, 5};
+        for (int val : coll | std::views::take(3)) {
+            std::cout << val << " ";
+        }
+    };
+    std::cout << "    安全3(内部遍历): ";
+    getAndPrint();
+    std::cout << "\n";
+
+    // 6.4.2 视图在容器修改后失效（vector 重分配）
+    std::cout << "  [容器修改后视图失效]\n";
+    {
+        std::vector<int> coll{1, 2, 3, 4, 5};
+        auto v = coll | std::views::take(3);
+        std::cout << "    初始视图: "; print(v);
+
+        // push_back 可能触发重分配，使视图中的引用失效
+        coll.push_back(6);   // 可能重分配
+        // 此时 v 中的迭代器可能失效!
+        // print(v);  // 潜在UB
+
+        // 安全方式: 修改前先拷贝，或修改后重建视图
+        auto v2 = coll | std::views::take(4);  // 在新容器上重建
+        std::cout << "    push后重建: "; print(v2);
+    }
+
+    // 6.4.3 owning_view 示例: 转移容器所有权
+    std::cout << "  [owning_view]\n";
+    {
+        // owning_view 持有容器的所有权（移动语义）
+        // 直接构造 owning_view（C++20）
+        auto ov = std::ranges::owning_view<std::vector<int>>{std::vector<int>{10, 20, 30, 40, 50}};
+        std::cout << "    owning_view: "; print(ov);
+
+        // 管道从右值自动创建 owning_view，再接适配器
+        auto ov2 = std::vector<int>{1, 2, 3, 4, 5}
+            | std::views::filter([](int x) { return x % 2 != 0; })
+            | std::views::transform([](int x) { return x * 10; });
+        std::cout << "    owning+管道: "; print(ov2);
+
+        // 对比: ref_view 不持有所有权（左值走 ref_view）
+        std::vector<int> owned{100, 200, 300};
+        auto rv = std::views::all(owned);  // ref_view
+        std::cout << "    ref_view:    "; print(rv);
+        owned[0] = 999;  // 修改原容器影响 ref_view
+        std::cout << "    修改后rv:    "; print(rv);
+
+        // owning_view 的类型
+        auto owningType = std::ranges::owning_view<std::vector<int>>{std::vector<int>{1}};
+        std::cout << std::format("    owning_view类型: {}\n", typeid(owningType).name());
+    }
+
+    // 6.4.4 哪些视图持有引用 vs 拥有数据
+    std::cout << "  [视图所有权总结]\n";
+    std::cout << "    ref_view:     持有引用（左值容器）\n";
+    std::cout << "    owning_view:  持有所有权（右值容器）\n";
+    std::cout << "    iota_view:    自身生成值，无需外部数据\n";
+    std::cout << "    filter/transform/take/drop: 仅持有适配的视图\n";
+    std::cout << "    建议: 对临时容器用 owning，对持久容器用 ref\n";
+    std::cout << "\n";
+}
+
 // ============================================================
 
 int main() {
@@ -482,6 +576,7 @@ int main() {
     demo_views_detail();
     demo_lazy_evaluation();
     demo_caching();
+    demo_dangling_views();
     demo_views_const();
 
     return 0;
