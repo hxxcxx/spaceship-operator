@@ -519,7 +519,8 @@ void demo_dangling_views() {
 
         // 安全方式: 修改前先拷贝，或修改后重建视图
         auto v2 = coll | std::views::take(4);  // 在新容器上重建
-        std::cout << "    push后重建: "; print(v2);
+        std::cout << "    push后重建: "; 
+        print(v2);
     }
 
     // 6.4.3 owning_view 示例: 转移容器所有权
@@ -528,20 +529,24 @@ void demo_dangling_views() {
         // owning_view 持有容器的所有权（移动语义）
         // 直接构造 owning_view（C++20）
         auto ov = std::ranges::owning_view<std::vector<int>>{std::vector<int>{10, 20, 30, 40, 50}};
-        std::cout << "    owning_view: "; print(ov);
+        std::cout << "    owning_view: "; 
+        print(ov);
 
         // 管道从右值自动创建 owning_view，再接适配器
         auto ov2 = std::vector<int>{1, 2, 3, 4, 5}
             | std::views::filter([](int x) { return x % 2 != 0; })
             | std::views::transform([](int x) { return x * 10; });
-        std::cout << "    owning+管道: "; print(ov2);
+        std::cout << "    owning+管道: "; 
+        print(ov2);
 
         // 对比: ref_view 不持有所有权（左值走 ref_view）
         std::vector<int> owned{100, 200, 300};
         auto rv = std::views::all(owned);  // ref_view
-        std::cout << "    ref_view:    "; print(rv);
+        std::cout << "    ref_view:    "; 
+        print(rv);
         owned[0] = 999;  // 修改原容器影响 ref_view
-        std::cout << "    修改后rv:    "; print(rv);
+        std::cout << "    修改后rv:    "; 
+        print(rv);
 
         // owning_view 的类型
         auto owningType = std::ranges::owning_view<std::vector<int>>{std::vector<int>{1}};
