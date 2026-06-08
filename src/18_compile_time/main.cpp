@@ -89,6 +89,7 @@ void demo_consteval() {
 
     // consteval函数: 必须用编译期值调用
     constexpr auto sq = squareC(7);
+    static_assert(sq == 49);
     std::cout << "  squareC(7) = " << sq << "\n";
 
     // constexpr函数: 可以用运行时值调用
