@@ -226,7 +226,9 @@ void demo_layout_compatibility() {
     // is_pointer_interconvertible_base_of_v
     std::cout << "  B1 is base of D1 (ptr interconvertible): "
               << std::is_pointer_interconvertible_base_of_v<B1, D1> << "\n";
-
+    // static_assert(std::is_standard_layout_v<D1>);
+    static_assert(std::is_standard_layout_v<B1>);     // 应 true
+    static_assert(!std::is_pointer_interconvertible_base_of_v<B1, D1>);
     // is_corresponding_member
     std::cout << "  Point2D::b & Point3D::y corresponding: "
               << std::is_corresponding_member(&Point2D::b, &Point3D::y) << "\n";
