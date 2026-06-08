@@ -24,6 +24,7 @@
                 "--config",
                 "Debug"
             ],
+            "dependsOn": "CMake: Configure",
             "group": {
                 "kind": "build",
                 "isDefault": false
