@@ -2,6 +2,11 @@
 
 C++20 完整特性学习项目，基于《C++20 Complete Guide》全书 24 章实现。
 
+## 参考资料
+
+- [C++20 Complete Guide 中文版](https://cppguide.cn/pages/cpp20completeguides/)
+- [cppstd20.com](https://www.cppstd20.com/)
+
 ## 章节
 
 | # | 章节 | 目录 |
